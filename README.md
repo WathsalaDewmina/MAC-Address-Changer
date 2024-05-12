@@ -13,7 +13,7 @@ A Media Access Control (MAC) address is a unique identifier assigned to a networ
 1. **Download the Source Code:**
     - Clone the repository to your local machine using the following command:
         ```sh
-        git clone https://github.com/your-username/mac-address-changer.git
+        git clone https://github.com/WathsalaDewmina/MAC-Address-Changer.git
         ```
 
 2. **Navigate to the Project Directory:**
