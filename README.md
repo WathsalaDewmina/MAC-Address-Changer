@@ -34,3 +34,4 @@ Change MAC address of interface eth0 to 00:11:22:33:44:55:
 
 ```sh
 python3 macchanger.py -i eth0 -m 00:11:22:33:44:55
+python3 macchanger.py -i wlan0 -m 12:34:56:78:9A:BC
