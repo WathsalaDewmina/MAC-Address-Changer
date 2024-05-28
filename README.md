@@ -8,7 +8,7 @@ Changing MAC addresses can be an essential aspect of cyber security-related acti
 
 A Media Access Control (MAC) address is a unique identifier assigned to a network interface controller (NIC) for communications at the data link layer of a network segment. It serves as a hardware address for devices in a network.
 
-<img src="macchanger_screenshot.png" alt="MAC Address Changer Screenshot" width="600"/>
+<img src="macchanger.png" alt="MAC Address Changer Screenshot" width="600"/>
 
 ## Steps
 
