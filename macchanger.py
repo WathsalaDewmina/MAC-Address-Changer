@@ -5,6 +5,24 @@ import optparse
 import re
 import sys
 
+welcome_screen = r"""
+
+  __  __          _____    _____ _    _          _   _  _____ ______ _____
+ |  \/  |   /\   / ____|  / ____| |  | |   /\   | \ | |/ ____|  ____|  __ \
+ | \  / |  /  \ | |      | |    | |__| |  /  \  |  \| | |  __| |__  | |__) |
+ | |\/| | / /\ \| |      | |    |  __  | / /\ \ | . ` | | |_ |  __| |  _  /
+ | |  | |/ ____ \ |____  | |____| |  | |/ ____ \| |\  | |__| | |____| | \ \
+ |_|  |_/_/    \_\_____|  \_____|_|  |_/_/    \_\_| \_|\_____|______|_|  \_\
+
+Made By :- Wathsala Dewmina
+GitHub  :- https://github.com/WathsalaDewmina/
+
+"""
+
+print(welcome_screen)
+
+
+# Mac Address Changing function
 def change_mac_address(interface, new_mac):
     try:
         # Disable the interface
@@ -18,6 +36,8 @@ def change_mac_address(interface, new_mac):
         print(f"[-] Failed to change MAC address: {e}")
         sys.exit(1)
 
+
+# Taking all the arguments from the user
 def get_arguments():
     # Create an OptionParser object
     parser = optparse.OptionParser()
@@ -35,6 +55,8 @@ def get_arguments():
 
     return options
 
+
+# Getting the current Mac Address of the user using regex
 def get_current_mac(interface):
     try:
         # Get current MAC address of the interface
@@ -51,11 +73,14 @@ def get_current_mac(interface):
         print(f"[-] Could not get MAC address for interface {interface}: {e}")
         sys.exit(1)
 
+
+# Validating the mac address
 def validate_mac(mac):
     if re.match(r"^(\w\w:){5}\w\w$", mac):
         return True
     else:
         return False
+
 
 # Checking if the user has root previlages
 def check_root():
@@ -63,6 +88,8 @@ def check_root():
         print("[-] This script requires root privileges. Please run as root.")
         sys.exit(1)
 
+
+# Checking the interface is correct
 def check_interface(interface):
     try:
         subprocess.check_output(["ifconfig", interface])
@@ -70,6 +97,8 @@ def check_interface(interface):
         print(f"[-] Interface {interface} does not exist.")
         sys.exit(1)
 
+
+# Performing all the functions orderly
 if __name__ == "__main__":
     import os
 
