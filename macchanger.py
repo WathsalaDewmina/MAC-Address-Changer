@@ -3,15 +3,20 @@
 import subprocess
 import optparse
 import re
+import sys
 
 def change_mac_address(interface, new_mac):
-    # Disable the interface
-    subprocess.call(["ifconfig", interface, "down"])
-    # Change the MAC address
-    subprocess.call(["ifconfig", interface, "hw", "ether", new_mac])
-    # Enable the interface
-    subprocess.call(["ifconfig", interface, "up"])
-    print("[+] Changing MAC Address of Interface {} to {}".format(interface, new_mac))
+    try:
+        # Disable the interface
+        subprocess.run(["ifconfig", interface, "down"], check=True)
+        # Change the MAC address
+        subprocess.run(["ifconfig", interface, "hw", "ether", new_mac], check=True)
+        # Enable the interface
+        subprocess.run(["ifconfig", interface, "up"], check=True)
+        print("[+] Changing MAC Address of Interface {} to {}".format(interface, new_mac))
+    except subprocess.CalledProcessError as e:
+        print(f"[-] Failed to change MAC address: {e}")
+        sys.exit(1)
 
 def get_arguments():
     # Create an OptionParser object
@@ -24,35 +29,77 @@ def get_arguments():
 
     # Check if interface and new MAC address are provided
     if not options.interface:
-        parser.error("[-] Please specify an interface. Use python macchanger --help for more details.")
+        parser.error("[-] Please specify an interface. Use --help for more details.")
     elif not options.new_mac:
-        parser.error("[-] Please specify a new MAC address. Use python macchanger --help for more details.")
+        parser.error("[-] Please specify a new MAC address. Use --help for more details.")
 
     return options
 
 def get_current_mac(interface):
-    # Get current MAC address of the interface
-    ifconfig_result = subprocess.check_output(["ifconfig", interface])
-    # Extract MAC address using regex
-    current_mac = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result.decode('utf-8'))
+    try:
+        # Get current MAC address of the interface
+        ifconfig_result = subprocess.check_output(["ifconfig", interface])
+        # Extract MAC address using regex
+        current_mac = re.search(r"\w\w:\w\w:\w\w:\w\w:\w\w:\w\w", ifconfig_result.decode('utf-8'))
 
-    if current_mac:
-        return current_mac.group(0)
+        if current_mac:
+            return current_mac.group(0)
+        else:
+            print("[-] Could not read MAC address.")
+            sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"[-] Could not get MAC address for interface {interface}: {e}")
+        sys.exit(1)
+
+def validate_mac(mac):
+    if re.match(r"^(\w\w:){5}\w\w$", mac):
+        return True
     else:
-        return None
+        return False
 
-# Get command line arguments
-options = get_arguments()
+# Checking if the user has root previlages
+def check_root():
+    if not (os.geteuid() == 0):
+        print("[-] This script requires root privileges. Please run as root.")
+        sys.exit(1)
 
-# Change MAC address
-change_mac_address(options.interface, options.new_mac)
+def check_interface(interface):
+    try:
+        subprocess.check_output(["ifconfig", interface])
+    except subprocess.CalledProcessError:
+        print(f"[-] Interface {interface} does not exist.")
+        sys.exit(1)
 
-# Get final MAC address
-final_mac = get_current_mac(options.interface)
+if __name__ == "__main__":
+    import os
 
-# Verify whether the MAC address is changed or not
-if final_mac == options.new_mac:
-    print("MAC Address successfully changed to {}".format(final_mac))
-else:
-    print("Error occurred while changin the MAC address, please check your MAC Address is valid")
-    print("Sample MAC address format:\n00:11:22:33:44:55")
+    # Check for root privileges
+    check_root()
+
+    # Get command line arguments
+    options = get_arguments()
+
+    # Validate MAC address
+    if not validate_mac(options.new_mac):
+        print("[-] Invalid MAC address format.")
+        print("Sample MAC address format: 00:11:22:33:44:55")
+        sys.exit(1)
+
+    # Check if the interface exists
+    check_interface(options.interface)
+
+    # Get current MAC address
+    current_mac = get_current_mac(options.interface)
+    print(f"Current MAC: {current_mac}")
+
+    # Change MAC address
+    change_mac_address(options.interface, options.new_mac)
+
+    # Get final MAC address
+    final_mac = get_current_mac(options.interface)
+
+    # Verify whether the MAC address is changed or not
+    if final_mac == options.new_mac:
+        print(f"[+] MAC Address successfully changed to {final_mac}")
+    else:
+        print("[-] Error occurred while changing the MAC address. Please check if the provided MAC address is valid.")
